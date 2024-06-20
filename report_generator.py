@@ -7,7 +7,6 @@ from utils.file_manager import get_saved_images
 from docx2pdf import convert
 
 
-
 def generate_report():
     
     #Crea un nuevo documento word
@@ -50,7 +49,7 @@ def generate_report():
     guardar_documento(doc, docx_filename)
     convertir_a_pdf(docx_filename, pdf_filename)
 
-    return docx_filename
+    return pdf_filename
 
 def configurar_margenes(doc):
     sections = doc.sections
@@ -113,8 +112,11 @@ def agregar_tabla_informacion(doc, textoAsignacion, fechaHoy):
     hdr_cells[1].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
 
 def agregar_tabla_con_imagenes(doc, rutas_imagenes):
+    
+    #Se lee la cantidad de imagenes
     num_imagenes = len(rutas_imagenes)
     
+    #Se define columnas y filas a crear en base a la cantidad de imagenes, nota* se agrega una fila de más por el formato de la tabla.
     if num_imagenes <= 2:
         rows = 2
         cols = 2
@@ -125,9 +127,13 @@ def agregar_tabla_con_imagenes(doc, rutas_imagenes):
         rows = ((num_imagenes - 1) // 3) + 2
         cols = 3
 
+    #4*4 y 6*5
+
+    #Se crea la tabla
     table = doc.add_table(rows=rows, cols=cols)
     table.style = 'Light List Accent 1'
 
+    #Se calcula ancho y alto de las celdas en la tabla
     if num_imagenes <= 4:
         cell_width = Inches(3)
         cell_height = Inches(4)
@@ -135,9 +141,12 @@ def agregar_tabla_con_imagenes(doc, rutas_imagenes):
         cell_width = Inches(1.5)
         cell_height = Inches(2.6)
 
+    #Se comienza a llenar la tabla con las imagenes obtenidas de la carpeta temp
     index = 0
     for i, row in enumerate(table.rows):
-        for j, cell in enumerate(row.cells):
+        if i == 0:
+            continue
+        for cell in row.cells:
             if index < num_imagenes:
                 img_path = rutas_imagenes[index]
                 paragraph = cell.paragraphs[0]
@@ -151,8 +160,5 @@ def agregar_tabla_con_imagenes(doc, rutas_imagenes):
 def guardar_documento(doc, filename):
     doc.save(filename)
 
-def convertir_a_pdf(input_file, output_file):
-    
-    convert(input_file)
+def convertir_a_pdf(input_file, output_file):    
     convert(input_file, output_file)
-    # convert("temp/")

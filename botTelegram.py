@@ -6,7 +6,6 @@ TOKEN = '7375526041:AAHjABWlwdK00t8C3dc6pgPvUSGYJ4MTaH8'
 
 bot = telebot.TeleBot(TOKEN)
 
-
 # ------------------------------------------------------- Incicio de bot ------------------------------------------------------------------------- #
 
 #Comando /Start
@@ -51,10 +50,7 @@ def create_report(message):
 @bot.message_handler(func=lambda message: message.text == 'Finalizar carga de imágenes')
 def end_session(message):
     bot.reply_to(message, 'Procesando imágenes...')
-    generate_report(message.chat.id)
-    # bot.reply_to(message, 'Procesamiento de imágenes completado.')
-
-    # generate_report_and_send_email(message.chat.id)
+    generar_reporte(message.chat.id)
 
 # def generate_report_and_send_email(chat_id):
 #     from report_generator import generate_report
@@ -67,21 +63,30 @@ def end_session(message):
 
 
 
-def generate_report(chat_id):
-    #En esta función debería de recibir por parametro el texto
-    from report_generator import generate_report
-
-    images = get_saved_images()
+def generar_reporte(chat_id):
     
+    #En esta función debería de recibir por parametro el texto
+    images = get_saved_images()
 
     if len(images) == 0:
         bot.send_message(chat_id, 'No se recibio ninguna foto.\nVuelve a intentar o cancela la operación.')
-        # create_report(chat_id)
 
     else:
-        generate_report()
-        bot.send_message(chat_id, 'El reporte se a generado.')
+        # generate_report()
+        bot.send_message(chat_id, 'Generando reporte...')
+        enviar_pdf_chat(chat_id)
 
+
+def enviar_pdf_chat(chat_id):
+
+    from report_generator import generate_report
+    report_path = generate_report()
+
+    if report_path:
+        with open(report_path, 'rb') as report_file:
+            bot.send_document(chat_id, report_file)
+    else:
+        bot.send_message(chat_id, 'Error al generar el reporte.')            
 
 
 @bot.message_handler(content_types=['photo'])
@@ -91,13 +96,11 @@ def handle_image(message):
         file = bot.download_file(file_info.file_path)
         save_image(file)
         bot.reply_to(message, 'Imagen recibida.')
-
-
-
-
-
-
-
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        end_button = types.KeyboardButton('Finalizar carga de imágenes')
+        cancel_button = types.KeyboardButton('Cancelar')
+        markup.add(cancel_button, end_button)
+        bot.reply_to(message, '', reply_markup=markup)
 
 
 
@@ -118,9 +121,6 @@ def view_reports(message):
 @bot.message_handler(func=lambda message: message.text == 'Cancelar')
 def cancel(message):
     send_welcome(message)
-
-
-
 
 
 
