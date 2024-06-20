@@ -45,8 +45,6 @@ def create_report(message):
     clear_images()
 
 
-
-
 @bot.message_handler(func=lambda message: message.text == 'Finalizar carga de imágenes')
 def end_session(message):
     bot.reply_to(message, 'Procesando imágenes...')
@@ -58,9 +56,6 @@ def end_session(message):
 #     report_path = generate_report()
 #     send_email(report_path)
 #     bot.send_message(chat_id, 'El reporte ha sido enviado por correo.')
-
-
-
 
 
 def generar_reporte(chat_id):
@@ -91,16 +86,20 @@ def enviar_pdf_chat(chat_id):
 
 @bot.message_handler(content_types=['photo'])
 def handle_image(message):
-    if message.photo:
-        file_info = bot.get_file(message.photo[-1].file_id)
-        file = bot.download_file(file_info.file_path)
-        save_image(file)
-        bot.reply_to(message, 'Imagen recibida.')
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        end_button = types.KeyboardButton('Finalizar carga de imágenes')
-        cancel_button = types.KeyboardButton('Cancelar')
-        markup.add(cancel_button, end_button)
-        bot.reply_to(message, '', reply_markup=markup)
+    # Descargar la foto
+    file_info = bot.get_file(message.photo[-1].file_id)
+    file = bot.download_file(file_info.file_path)
+    save_image(file)
+    
+    # Crear y enviar teclado de respuesta
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    end_button = types.KeyboardButton('Finalizar carga de imágenes')
+    cancel_button = types.KeyboardButton('Cancelar')
+    markup.add(cancel_button, end_button)
+    
+    # Enviar mensaje de confirmación
+    bot.reply_to(message, 'Imagen recibida.',reply_markup=markup)
+    
 
 
 
